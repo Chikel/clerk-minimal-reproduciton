@@ -1,8 +1,15 @@
-import { clerkMiddleware } from '@clerk/nextjs/server'
+import { clerkMiddleware } from "@clerk/nextjs/server";
+import { NextRequest, NextResponse } from "next/server";
 
-// This Middleware does not protect any routes by default.
-// See https://clerk.com/docs/references/nextjs/clerk-middleware for more information about configuring your Middleware
-export default clerkMiddleware()
+export default clerkMiddleware(async (auth, req: NextRequest) => {
+  const { userId, redirectToSignIn } = await auth();
+
+  if (!userId) {
+    redirectToSignIn({ returnBackUrl: req.url })
+  }
+
+  if (userId) return NextResponse.next()
+})
 
 export const config = {
   matcher: [
@@ -11,4 +18,4 @@ export const config = {
     // Always run for API routes
     '/(api|trpc)(.*)',
   ],
-}
+};
